@@ -1,0 +1,2412 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TikTok Business Account API",
+    "description": "The TikTok Business Account API enables management of organic content on TikTok Business Accounts. This API provides endpoints for managing business account profiles, organic videos, comments, content publishing, post authorization, benchmarks, and trending discovery.\n\nCapabilities include:\n- Account management - Retrieve business account profile and settings\n- Video management - List and analyze organic video content and performance metrics\n- Comment moderation - List, create, reply, delete, hide, like, and pin comments\n- Content publishing - Publish videos and photos with hashtag suggestions and location tagging\n- Post authorization - Manage third-party post authorization\n- Analytics - Access benchmark and performance data\n- Discovery - Search trending content and keywords",
+    "version": "1.3",
+    "contact": {
+      "name": "TikTok for Business Developers",
+      "url": "https://business-api.tiktok.com/portal/docs"
+    },
+    "license": {
+      "name": "TikTok Developer Terms of Service",
+      "url": "https://www.tiktok.com/legal/tik-tok-developer-terms-of-service"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://business-api.tiktok.com/open_api/v1.3",
+      "description": "TikTok Business API (Production)"
+    }
+  ],
+  "security": [
+    {
+      "tiktok_oauth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Account",
+      "description": "Business account profile and information endpoints"
+    },
+    {
+      "name": "Videos",
+      "description": "Organic video listing and analytics endpoints"
+    },
+    {
+      "name": "Comments",
+      "description": "Comment management endpoints for listing, creating, replying, and moderating comments"
+    },
+    {
+      "name": "Publishing",
+      "description": "Content publishing endpoints for videos, photos, hashtags, and locations"
+    },
+    {
+      "name": "Post Authorization",
+      "description": "Post authorization management endpoints for third-party content authorization"
+    },
+    {
+      "name": "Analytics",
+      "description": "Benchmark and performance analytics endpoints"
+    },
+    {
+      "name": "Discovery",
+      "description": "Trending content and keyword discovery endpoints"
+    }
+  ],
+  "paths": {
+    "/business/get/": {
+      "get": {
+        "operationId": "getBusinessAccount",
+        "summary": "Get business account info",
+        "description": "Retrieve profile information for a TikTok Business Account. Use the `fields` parameter to specify which fields to return. Basic fields include display_name and profile_image.",
+        "tags": ["Account"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BusinessId"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "description": "JSON array of fields to return. Basic fields: display_name, profile_image. All available fields: display_name, profile_image, followers_count, following_count, likes_count, video_count, bio_description, is_verified, username, profile_deep_link.",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "display_name",
+                      "profile_image",
+                      "followers_count",
+                      "following_count",
+                      "likes_count",
+                      "video_count",
+                      "bio_description",
+                      "is_verified",
+                      "username",
+                      "profile_deep_link"
+                    ]
+                  },
+                  "example": ["display_name", "profile_image"]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with business account data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/BusinessAccount"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/video/list/": {
+      "get": {
+        "operationId": "listBusinessVideos",
+        "summary": "List business account videos",
+        "description": "Retrieve a paginated list of organic videos for a TikTok Business Account. Use the `fields` parameter to specify which video data and metrics to return. Supports cursor-based pagination.",
+        "tags": ["Videos"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BusinessId"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "description": "JSON array of video fields to return.",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "item_id",
+                      "create_time",
+                      "caption",
+                      "video_views",
+                      "likes",
+                      "comments",
+                      "shares",
+                      "reach",
+                      "video_duration",
+                      "average_time_watched",
+                      "full_video_watched_rate",
+                      "total_time_watched",
+                      "impression_sources",
+                      "audience_countries",
+                      "embed_url",
+                      "share_url",
+                      "thumbnail_url"
+                    ]
+                  },
+                  "example": ["item_id", "create_time", "caption", "video_views", "likes", "comments", "shares"]
+                }
+              }
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/MaxCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with paginated video list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/VideoListData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/comment/list/": {
+      "get": {
+        "operationId": "listComments",
+        "summary": "List comments on a video",
+        "description": "Retrieve a paginated list of comments on a specific video. Supports cursor-based pagination and field selection.",
+        "tags": ["Comments"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BusinessId"
+          },
+          {
+            "name": "video_id",
+            "in": "query",
+            "description": "The ID of the video to retrieve comments for.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "description": "JSON array of comment fields to return.",
+            "required": false,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "comment_id",
+                      "text",
+                      "create_time",
+                      "likes",
+                      "replies",
+                      "user_id",
+                      "username",
+                      "user_avatar_url",
+                      "is_pinned",
+                      "comment_status"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/MaxCount"
+          },
+          {
+            "name": "sort_field",
+            "in": "query",
+            "description": "Field to sort comments by.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["CREATE_TIME", "LIKES", "REPLIES"],
+              "default": "CREATE_TIME"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "Sort order.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["ASC", "DESC"],
+              "default": "DESC"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with paginated comment list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CommentListData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/comment/reply/list/": {
+      "get": {
+        "operationId": "listCommentReplies",
+        "summary": "List replies to a comment",
+        "description": "Retrieve a paginated list of replies to a specific comment.",
+        "tags": ["Comments"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BusinessId"
+          },
+          {
+            "name": "comment_id",
+            "in": "query",
+            "description": "The ID of the parent comment to retrieve replies for.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "description": "JSON array of reply fields to return.",
+            "required": false,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "comment_id",
+                      "text",
+                      "create_time",
+                      "likes",
+                      "user_id",
+                      "username",
+                      "user_avatar_url",
+                      "parent_comment_id"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/MaxCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with paginated reply list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CommentListData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/comment/create/": {
+      "post": {
+        "operationId": "createComment",
+        "summary": "Create a comment on a video",
+        "description": "Post a new top-level comment on a video owned by the business account.",
+        "tags": ["Comments"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Comment created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CommentActionResult"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/comment/reply/create/": {
+      "post": {
+        "operationId": "createCommentReply",
+        "summary": "Reply to a comment",
+        "description": "Post a reply to an existing comment on a video owned by the business account.",
+        "tags": ["Comments"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentReplyCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reply created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CommentActionResult"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/comment/delete/": {
+      "post": {
+        "operationId": "deleteComment",
+        "summary": "Delete a comment",
+        "description": "Delete a comment or reply on a video owned by the business account.",
+        "tags": ["Comments"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Comment deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/comment/hide/": {
+      "post": {
+        "operationId": "hideComment",
+        "summary": "Hide or unhide a comment",
+        "description": "Change the visibility of a comment on a video. Hidden comments are not visible to other users.",
+        "tags": ["Comments"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentHideRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Comment visibility updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/comment/like/": {
+      "post": {
+        "operationId": "likeComment",
+        "summary": "Like or unlike a comment",
+        "description": "Like or unlike a comment on a video owned by the business account.",
+        "tags": ["Comments"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentLikeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Comment like status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/comment/pin/": {
+      "post": {
+        "operationId": "pinComment",
+        "summary": "Pin or unpin a comment",
+        "description": "Pin or unpin a comment on a video owned by the business account. Pinned comments appear at the top of the comment list.",
+        "tags": ["Comments"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentPinRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Comment pin status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/video/publish/": {
+      "post": {
+        "operationId": "publishVideo",
+        "summary": "Publish a video",
+        "description": "Publish a video to the TikTok Business Account. The video can be uploaded via a publicly accessible URL. The publish process is asynchronous; use the publish status endpoint to track progress.",
+        "tags": ["Publishing"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoPublishRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Video publish initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/PublishResult"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/photo/publish/": {
+      "post": {
+        "operationId": "publishPhoto",
+        "summary": "Publish photos",
+        "description": "Publish one or more photos to the TikTok Business Account. Photos can be uploaded via publicly accessible URLs.",
+        "tags": ["Publishing"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhotoPublishRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Photo publish initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/PublishResult"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/publish/status/": {
+      "get": {
+        "operationId": "getPublishStatus",
+        "summary": "Get publish status",
+        "description": "Check the status of an asynchronous video or photo publish operation.",
+        "tags": ["Publishing"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BusinessId"
+          },
+          {
+            "name": "publish_id",
+            "in": "query",
+            "description": "The publish ID returned from a video or photo publish request.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with publish status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/PublishStatusData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/video/settings/": {
+      "get": {
+        "operationId": "getVideoSettings",
+        "summary": "Get video publishing settings",
+        "description": "Retrieve available video publishing settings and options for the business account, including privacy levels, interaction settings, and content disclosure options.",
+        "tags": ["Publishing"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BusinessId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with video settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/VideoSettingsData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/publish/location/": {
+      "get": {
+        "operationId": "getPublishLocations",
+        "summary": "Get available publish locations",
+        "description": "Retrieve available geographic locations that can be tagged when publishing content.",
+        "tags": ["Publishing"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BusinessId"
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "Search keyword to filter locations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/MaxCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with available locations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/LocationListData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/hashtag/suggestion/": {
+      "get": {
+        "operationId": "getHashtagSuggestions",
+        "summary": "Get hashtag suggestions",
+        "description": "Retrieve suggested hashtags based on a keyword. Useful when composing post captions.",
+        "tags": ["Publishing"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BusinessId"
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "The keyword to get hashtag suggestions for.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/MaxCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with hashtag suggestions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/HashtagSuggestionData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/post/authorize/": {
+      "post": {
+        "operationId": "authorizePost",
+        "summary": "Authorize a post",
+        "description": "Grant authorization for a third-party post on the business account. This enables collaborative content posting.",
+        "tags": ["Post Authorization"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostAuthorizeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Post authorization created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/PostAuthorizeResult"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/post/authorize/status/": {
+      "get": {
+        "operationId": "getPostAuthorizeStatus",
+        "summary": "Get post authorization status",
+        "description": "Check the current status of a post authorization request.",
+        "tags": ["Post Authorization"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BusinessId"
+          },
+          {
+            "name": "authorize_id",
+            "in": "query",
+            "description": "The authorization ID to check status for.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with authorization status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/PostAuthorizeStatusData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/post/authorize/delete/": {
+      "post": {
+        "operationId": "deletePostAuthorization",
+        "summary": "Delete a post authorization",
+        "description": "Revoke an existing post authorization.",
+        "tags": ["Post Authorization"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostAuthorizeDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Post authorization deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/post/authorize/setting/": {
+      "get": {
+        "operationId": "getPostAuthorizeSetting",
+        "summary": "Get post authorization settings",
+        "description": "Retrieve the current post authorization settings for the business account.",
+        "tags": ["Post Authorization"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BusinessId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with authorization settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/PostAuthorizeSettingData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/business/benchmark/": {
+      "get": {
+        "operationId": "getBenchmark",
+        "summary": "Get benchmark data",
+        "description": "Retrieve benchmark and performance comparison data for the business account. Benchmarks provide industry-level comparisons for key metrics.",
+        "tags": ["Analytics"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BusinessId"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "description": "JSON array of benchmark fields to return.",
+            "required": false,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "followers_count",
+                      "likes_count",
+                      "comments_count",
+                      "shares_count",
+                      "video_views",
+                      "profile_views",
+                      "engagement_rate"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "date_range",
+            "in": "query",
+            "description": "The time period for benchmark data.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["7DAY", "28DAY", "60DAY"],
+              "default": "7DAY"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with benchmark data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/BenchmarkData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/discovery/trending/search/": {
+      "get": {
+        "operationId": "searchTrending",
+        "summary": "Search trending content",
+        "description": "Search for trending content and hashtags on TikTok. Results can be filtered by country and category.",
+        "tags": ["Discovery"],
+        "parameters": [
+          {
+            "name": "country_code",
+            "in": "query",
+            "description": "ISO 3166-1 alpha-2 country code to filter trending content by region.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "US",
+              "example": "US"
+            }
+          },
+          {
+            "name": "category_name",
+            "in": "query",
+            "description": "Category to filter trending content.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ALL",
+                "APPAREL_AND_ACCESSORIES",
+                "ART",
+                "AUTOMOTIVE",
+                "BEAUTY",
+                "BEAUTY_AND_PERSONAL_CARE",
+                "BUSINESS_AND_FINANCE",
+                "COMEDY",
+                "COOKING",
+                "CULTURE",
+                "DANCE",
+                "EDUCATION",
+                "ENTERTAINMENT_AND_SPORTS_NEWS",
+                "EXERCISE_AND_FITNESS",
+                "FAMILY",
+                "FOOD",
+                "FOOD_AND_BEVERAGE",
+                "GAMES",
+                "HEALTH",
+                "HOME_AND_GARDEN",
+                "HOME_IMPROVEMENT",
+                "MOVIES_AND_TV",
+                "MUSIC",
+                "PETS",
+                "PHOTOGRAPHY",
+                "SCIENCE",
+                "SPORTS",
+                "TECHNOLOGY",
+                "TRAVEL"
+              ],
+              "default": "ALL"
+            }
+          },
+          {
+            "name": "date_range",
+            "in": "query",
+            "description": "The time period for trending data.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["1DAY", "7DAY", "30DAY", "120DAY"],
+              "default": "7DAY"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/MaxCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with trending content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/TrendingSearchData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/discovery/trending/search/keyword/": {
+      "get": {
+        "operationId": "searchTrendingKeywords",
+        "summary": "Search trending keywords",
+        "description": "Search for trending keywords on TikTok. Returns popular search terms and their associated metrics.",
+        "tags": ["Discovery"],
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "The keyword to search for trending terms related to.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country_code",
+            "in": "query",
+            "description": "ISO 3166-1 alpha-2 country code to filter by region.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "US"
+            }
+          },
+          {
+            "name": "date_range",
+            "in": "query",
+            "description": "The time period for trending keyword data.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["1DAY", "7DAY", "30DAY", "120DAY"],
+              "default": "7DAY"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/MaxCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with trending keywords",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/BaseResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/TrendingKeywordData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "tiktok_oauth": {
+        "type": "oauth2",
+        "description": "OAuth 2.0 authorization code flow for TikTok Business Accounts. Users authorize via the TikTok Business developer portal, and tokens are exchanged at the token endpoint using app_id (client_id) and secret (client_secret). The resulting access token is passed via the Access-Token header. Access tokens are valid for 24 hours; refresh tokens are valid for 1 year.",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://www.tiktok.com/v2/auth/authorize/",
+            "tokenUrl": "https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/",
+            "refreshUrl": "https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/",
+            "scopes": {
+              "user.info.basic": "Read basic profile info (display name, avatar, open ID)",
+              "user.info.profile": "Read extended profile data (bio, verification status, profile links)",
+              "user.info.stats": "Read statistical data (follower count, following count, video count, likes)",
+              "user.insights": "Access user engagement insights and analytics",
+              "video.list": "Read user's public videos on TikTok",
+              "video.insights": "Access detailed video performance metrics",
+              "video.publish": "Directly post content to a user's TikTok profile",
+              "video.upload": "Share content as a draft for editing before posting",
+              "comment.list": "Read comments on videos",
+              "comment.list.manage": "Create, delete, hide, like, and pin comments"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "BusinessId": {
+        "name": "business_id",
+        "in": "query",
+        "description": "The unique identifier of the TikTok Business Account.",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "Cursor": {
+        "name": "cursor",
+        "in": "query",
+        "description": "Pagination cursor. Use the cursor value returned in the previous response to fetch the next page. The cursor is a UTC Unix timestamp in milliseconds.",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "format": "int64",
+          "default": 0
+        }
+      },
+      "MaxCount": {
+        "name": "max_count",
+        "in": "query",
+        "description": "Maximum number of items to return per page.",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 20
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad request - invalid parameters or malformed request body",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized - invalid, expired, or missing access token",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Rate limit exceeded - too many requests",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "BaseResponse": {
+        "type": "object",
+        "description": "Standard TikTok Business API response envelope",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Response status code. 0 indicates success."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable response message."
+          },
+          "request_id": {
+            "type": "string",
+            "description": "Unique identifier for the request, useful for debugging."
+          },
+          "data": {
+            "type": "object",
+            "description": "Response data payload. Structure varies by endpoint."
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Error response from the TikTok Business API",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Error code. Non-zero values indicate an error."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error description."
+          },
+          "request_id": {
+            "type": "string",
+            "description": "Unique identifier for the failed request."
+          },
+          "data": {
+            "type": "object",
+            "nullable": true,
+            "description": "May be null or empty on error responses."
+          }
+        }
+      },
+      "BusinessAccount": {
+        "type": "object",
+        "description": "TikTok Business Account profile information",
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "description": "The display name of the business account."
+          },
+          "profile_image": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of the business account's profile image."
+          },
+          "followers_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total number of followers."
+          },
+          "following_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total number of accounts being followed."
+          },
+          "likes_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total number of likes received across all videos."
+          },
+          "video_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total number of public videos."
+          },
+          "bio_description": {
+            "type": "string",
+            "description": "The bio/description of the business account."
+          },
+          "is_verified": {
+            "type": "boolean",
+            "description": "Whether the account is verified."
+          },
+          "username": {
+            "type": "string",
+            "description": "The unique username of the business account."
+          },
+          "profile_deep_link": {
+            "type": "string",
+            "format": "uri",
+            "description": "Deep link URL to the business account's TikTok profile."
+          }
+        }
+      },
+      "Video": {
+        "type": "object",
+        "description": "TikTok organic video object with metrics",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "description": "Unique identifier for the video."
+          },
+          "create_time": {
+            "type": "integer",
+            "format": "int64",
+            "description": "UTC Unix timestamp when the video was created."
+          },
+          "caption": {
+            "type": "string",
+            "description": "The video caption text, including hashtags and mentions."
+          },
+          "video_views": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total number of video views."
+          },
+          "likes": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total number of likes."
+          },
+          "comments": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total number of comments."
+          },
+          "shares": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total number of shares."
+          },
+          "reach": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total unique viewers reached."
+          },
+          "video_duration": {
+            "type": "number",
+            "format": "float",
+            "description": "Duration of the video in seconds."
+          },
+          "average_time_watched": {
+            "type": "number",
+            "format": "float",
+            "description": "Average watch time in seconds."
+          },
+          "full_video_watched_rate": {
+            "type": "number",
+            "format": "float",
+            "description": "Percentage of viewers who watched the entire video."
+          },
+          "total_time_watched": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total cumulative watch time in seconds."
+          },
+          "impression_sources": {
+            "type": "object",
+            "description": "Breakdown of where video impressions came from.",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "audience_countries": {
+            "type": "object",
+            "description": "Breakdown of viewer countries as percentages.",
+            "additionalProperties": {
+              "type": "number",
+              "format": "float"
+            }
+          },
+          "embed_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Embeddable URL for the video."
+          },
+          "share_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Shareable URL for the video."
+          },
+          "thumbnail_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of the video thumbnail image."
+          }
+        }
+      },
+      "VideoListData": {
+        "type": "object",
+        "description": "Paginated video list response data",
+        "properties": {
+          "videos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Video"
+            },
+            "description": "Array of video objects."
+          },
+          "cursor": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Cursor for the next page. Pass this value to fetch subsequent pages."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether there are more results available."
+          }
+        }
+      },
+      "Comment": {
+        "type": "object",
+        "description": "TikTok comment object",
+        "properties": {
+          "comment_id": {
+            "type": "string",
+            "description": "Unique identifier for the comment."
+          },
+          "text": {
+            "type": "string",
+            "description": "The comment text content."
+          },
+          "create_time": {
+            "type": "integer",
+            "format": "int64",
+            "description": "UTC Unix timestamp when the comment was created."
+          },
+          "likes": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Number of likes on the comment."
+          },
+          "replies": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Number of replies to the comment."
+          },
+          "user_id": {
+            "type": "string",
+            "description": "ID of the user who posted the comment."
+          },
+          "username": {
+            "type": "string",
+            "description": "Username of the comment author."
+          },
+          "user_avatar_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Avatar URL of the comment author."
+          },
+          "is_pinned": {
+            "type": "boolean",
+            "description": "Whether the comment is pinned."
+          },
+          "comment_status": {
+            "type": "string",
+            "enum": ["PUBLIC", "HIDDEN"],
+            "description": "Visibility status of the comment."
+          },
+          "parent_comment_id": {
+            "type": "string",
+            "description": "ID of the parent comment, if this is a reply."
+          }
+        }
+      },
+      "CommentListData": {
+        "type": "object",
+        "description": "Paginated comment list response data",
+        "properties": {
+          "comments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Comment"
+            },
+            "description": "Array of comment objects."
+          },
+          "cursor": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Cursor for the next page."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether there are more results available."
+          }
+        }
+      },
+      "CommentCreateRequest": {
+        "type": "object",
+        "description": "Request body for creating a new comment on a video",
+        "required": ["business_id", "video_id", "text"],
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "The business account ID."
+          },
+          "video_id": {
+            "type": "string",
+            "description": "The ID of the video to comment on."
+          },
+          "text": {
+            "type": "string",
+            "description": "The comment text. Maximum 150 characters.",
+            "maxLength": 150
+          }
+        }
+      },
+      "CommentReplyCreateRequest": {
+        "type": "object",
+        "description": "Request body for replying to an existing comment",
+        "required": ["business_id", "video_id", "comment_id", "text"],
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "The business account ID."
+          },
+          "video_id": {
+            "type": "string",
+            "description": "The ID of the video the comment belongs to."
+          },
+          "comment_id": {
+            "type": "string",
+            "description": "The ID of the comment to reply to."
+          },
+          "text": {
+            "type": "string",
+            "description": "The reply text. Maximum 150 characters.",
+            "maxLength": 150
+          }
+        }
+      },
+      "CommentDeleteRequest": {
+        "type": "object",
+        "description": "Request body for deleting a comment",
+        "required": ["business_id", "comment_id"],
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "The business account ID."
+          },
+          "comment_id": {
+            "type": "string",
+            "description": "The ID of the comment to delete."
+          }
+        }
+      },
+      "CommentHideRequest": {
+        "type": "object",
+        "description": "Request body for hiding or unhiding a comment",
+        "required": ["business_id", "comment_id", "hidden"],
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "The business account ID."
+          },
+          "comment_id": {
+            "type": "string",
+            "description": "The ID of the comment to hide or unhide."
+          },
+          "hidden": {
+            "type": "boolean",
+            "description": "Set to true to hide the comment, false to unhide."
+          }
+        }
+      },
+      "CommentLikeRequest": {
+        "type": "object",
+        "description": "Request body for liking or unliking a comment",
+        "required": ["business_id", "comment_id", "action"],
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "The business account ID."
+          },
+          "comment_id": {
+            "type": "string",
+            "description": "The ID of the comment to like or unlike."
+          },
+          "action": {
+            "type": "string",
+            "enum": ["LIKE", "UNLIKE"],
+            "description": "The action to perform."
+          }
+        }
+      },
+      "CommentPinRequest": {
+        "type": "object",
+        "description": "Request body for pinning or unpinning a comment",
+        "required": ["business_id", "comment_id", "pinned"],
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "The business account ID."
+          },
+          "comment_id": {
+            "type": "string",
+            "description": "The ID of the comment to pin or unpin."
+          },
+          "pinned": {
+            "type": "boolean",
+            "description": "Set to true to pin the comment, false to unpin."
+          }
+        }
+      },
+      "CommentActionResult": {
+        "type": "object",
+        "description": "Result of a comment creation or reply action",
+        "properties": {
+          "comment_id": {
+            "type": "string",
+            "description": "The ID of the newly created comment or reply."
+          },
+          "create_time": {
+            "type": "integer",
+            "format": "int64",
+            "description": "UTC Unix timestamp when the comment was created."
+          },
+          "text": {
+            "type": "string",
+            "description": "The text content of the created comment."
+          }
+        }
+      },
+      "VideoPublishRequest": {
+        "type": "object",
+        "description": "Request body for publishing a video to the business account",
+        "required": ["business_id", "video_url"],
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "The business account ID."
+          },
+          "video_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Publicly accessible URL of the video to publish."
+          },
+          "post_info": {
+            "$ref": "#/components/schemas/PostInfo"
+          }
+        }
+      },
+      "PhotoPublishRequest": {
+        "type": "object",
+        "description": "Request body for publishing photos to the business account",
+        "required": ["business_id", "photo_images"],
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "The business account ID."
+          },
+          "photo_images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            },
+            "maxItems": 35,
+            "description": "Array of publicly accessible photo URLs. Maximum 35 images."
+          },
+          "photo_cover_index": {
+            "type": "integer",
+            "description": "Index (0-based) of the photo to use as the cover image.",
+            "default": 0
+          },
+          "post_info": {
+            "$ref": "#/components/schemas/PostInfo"
+          }
+        }
+      },
+      "PostInfo": {
+        "type": "object",
+        "description": "Post metadata and settings for published content",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Post title. Maximum 90 characters for photo posts.",
+            "maxLength": 90
+          },
+          "description": {
+            "type": "string",
+            "description": "Post description/caption with hashtags and mentions. Maximum 2200 characters for videos, 4000 for photos.",
+            "maxLength": 4000
+          },
+          "privacy_level": {
+            "type": "string",
+            "enum": ["PUBLIC_TO_EVERYONE", "MUTUAL_FOLLOW_FRIENDS", "FOLLOWER_OF_CREATOR", "SELF_ONLY"],
+            "description": "Privacy level for the published content."
+          },
+          "disable_comment": {
+            "type": "boolean",
+            "description": "If true, comments will be disabled on the post.",
+            "default": false
+          },
+          "disable_duet": {
+            "type": "boolean",
+            "description": "If true, duets will be disabled on the post (videos only).",
+            "default": false
+          },
+          "disable_stitch": {
+            "type": "boolean",
+            "description": "If true, stitches will be disabled on the post (videos only).",
+            "default": false
+          },
+          "brand_content_toggle": {
+            "type": "boolean",
+            "description": "Set to true if the content is a paid partnership to promote a third-party business.",
+            "default": false
+          },
+          "brand_organic_toggle": {
+            "type": "boolean",
+            "description": "Set to true if the content is promoting the creator's own business.",
+            "default": false
+          },
+          "is_aigc": {
+            "type": "boolean",
+            "description": "Set to true if the content is AI-generated.",
+            "default": false
+          },
+          "location_id": {
+            "type": "string",
+            "description": "Location ID to tag on the post. Use the publish/location endpoint to search for valid IDs."
+          }
+        }
+      },
+      "PublishResult": {
+        "type": "object",
+        "description": "Result of a content publish initiation",
+        "properties": {
+          "publish_id": {
+            "type": "string",
+            "description": "Unique identifier to track the publish action. Use with the publish/status endpoint to check progress."
+          }
+        }
+      },
+      "PublishStatusData": {
+        "type": "object",
+        "description": "Status of a content publish operation",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PROCESSING_DOWNLOAD",
+              "PROCESSING_UPLOAD",
+              "SEND_TO_USER_INBOX",
+              "PUBLISH_COMPLETE",
+              "FAILED"
+            ],
+            "description": "Current status of the publish operation."
+          },
+          "fail_reason": {
+            "type": "string",
+            "description": "Reason for failure, if status is FAILED.",
+            "enum": [
+              "file_format_check_failed",
+              "duration_check_failed",
+              "frame_rate_check_failed",
+              "picture_size_check_failed",
+              "internal",
+              "video_pull_failed",
+              "photo_pull_failed",
+              "publish_cancelled",
+              "auth_removed",
+              "spam_risk_too_many_posts",
+              "spam_risk_user_banned_from_posting",
+              "spam_risk_text",
+              "spam_risk"
+            ]
+          },
+          "publish_id": {
+            "type": "string",
+            "description": "The publish ID being tracked."
+          },
+          "item_id": {
+            "type": "string",
+            "description": "The video/post ID once published successfully."
+          }
+        }
+      },
+      "VideoSettingsData": {
+        "type": "object",
+        "description": "Video publishing settings and available options",
+        "properties": {
+          "privacy_level_options": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["PUBLIC_TO_EVERYONE", "MUTUAL_FOLLOW_FRIENDS", "FOLLOWER_OF_CREATOR", "SELF_ONLY"]
+            },
+            "description": "Available privacy level options for the account."
+          },
+          "comment_disabled": {
+            "type": "boolean",
+            "description": "Whether comments are disabled at the account level."
+          },
+          "duet_disabled": {
+            "type": "boolean",
+            "description": "Whether duets are disabled at the account level."
+          },
+          "stitch_disabled": {
+            "type": "boolean",
+            "description": "Whether stitches are disabled at the account level."
+          },
+          "max_video_duration": {
+            "type": "integer",
+            "description": "Maximum allowed video duration in seconds."
+          }
+        }
+      },
+      "Location": {
+        "type": "object",
+        "description": "A geographic location for content tagging",
+        "properties": {
+          "location_id": {
+            "type": "string",
+            "description": "Unique identifier for the location."
+          },
+          "location_name": {
+            "type": "string",
+            "description": "Display name of the location."
+          },
+          "address": {
+            "type": "string",
+            "description": "Full address of the location."
+          },
+          "city": {
+            "type": "string",
+            "description": "City name."
+          },
+          "country": {
+            "type": "string",
+            "description": "Country name."
+          },
+          "country_code": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code."
+          }
+        }
+      },
+      "LocationListData": {
+        "type": "object",
+        "description": "Paginated location list response data",
+        "properties": {
+          "locations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Location"
+            },
+            "description": "Array of location objects."
+          },
+          "cursor": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Cursor for the next page."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether there are more results available."
+          }
+        }
+      },
+      "Hashtag": {
+        "type": "object",
+        "description": "A hashtag suggestion",
+        "properties": {
+          "hashtag_id": {
+            "type": "string",
+            "description": "Unique identifier for the hashtag."
+          },
+          "hashtag_name": {
+            "type": "string",
+            "description": "The hashtag text (without the # symbol)."
+          },
+          "video_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Number of videos using this hashtag."
+          },
+          "view_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total views across videos using this hashtag."
+          }
+        }
+      },
+      "HashtagSuggestionData": {
+        "type": "object",
+        "description": "Hashtag suggestion response data",
+        "properties": {
+          "hashtags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hashtag"
+            },
+            "description": "Array of suggested hashtags."
+          }
+        }
+      },
+      "PostAuthorizeRequest": {
+        "type": "object",
+        "description": "Request body for authorizing a third-party post",
+        "required": ["business_id"],
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "The business account ID."
+          },
+          "post_id": {
+            "type": "string",
+            "description": "The post ID to authorize."
+          },
+          "authorized_user_id": {
+            "type": "string",
+            "description": "The user ID to grant authorization to."
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["VIEW", "EDIT", "DELETE", "PUBLISH"]
+            },
+            "description": "List of permissions to grant."
+          }
+        }
+      },
+      "PostAuthorizeResult": {
+        "type": "object",
+        "description": "Result of a post authorization request",
+        "properties": {
+          "authorize_id": {
+            "type": "string",
+            "description": "Unique identifier for the authorization."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "PENDING", "EXPIRED", "REVOKED"],
+            "description": "Current status of the authorization."
+          }
+        }
+      },
+      "PostAuthorizeDeleteRequest": {
+        "type": "object",
+        "description": "Request body for deleting a post authorization",
+        "required": ["business_id", "authorize_id"],
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "The business account ID."
+          },
+          "authorize_id": {
+            "type": "string",
+            "description": "The authorization ID to delete."
+          }
+        }
+      },
+      "PostAuthorizeStatusData": {
+        "type": "object",
+        "description": "Post authorization status information",
+        "properties": {
+          "authorize_id": {
+            "type": "string",
+            "description": "The authorization ID."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "PENDING", "EXPIRED", "REVOKED"],
+            "description": "Current status of the authorization."
+          },
+          "post_id": {
+            "type": "string",
+            "description": "The post ID associated with this authorization."
+          },
+          "authorized_user_id": {
+            "type": "string",
+            "description": "The user ID that was granted authorization."
+          },
+          "create_time": {
+            "type": "integer",
+            "format": "int64",
+            "description": "UTC Unix timestamp when the authorization was created."
+          },
+          "expire_time": {
+            "type": "integer",
+            "format": "int64",
+            "description": "UTC Unix timestamp when the authorization expires."
+          }
+        }
+      },
+      "PostAuthorizeSettingData": {
+        "type": "object",
+        "description": "Post authorization settings for the business account",
+        "properties": {
+          "authorization_enabled": {
+            "type": "boolean",
+            "description": "Whether post authorization is enabled for the account."
+          },
+          "default_permissions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["VIEW", "EDIT", "DELETE", "PUBLISH"]
+            },
+            "description": "Default permissions granted to authorized users."
+          },
+          "max_authorized_users": {
+            "type": "integer",
+            "description": "Maximum number of users that can be authorized."
+          },
+          "authorization_expiry_days": {
+            "type": "integer",
+            "description": "Number of days before an authorization expires."
+          }
+        }
+      },
+      "BenchmarkData": {
+        "type": "object",
+        "description": "Benchmark and performance data for the business account",
+        "properties": {
+          "followers_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Net new followers in the period."
+          },
+          "likes_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total likes received in the period."
+          },
+          "comments_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total comments received in the period."
+          },
+          "shares_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total shares in the period."
+          },
+          "video_views": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total video views in the period."
+          },
+          "profile_views": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total profile views in the period."
+          },
+          "engagement_rate": {
+            "type": "number",
+            "format": "float",
+            "description": "Overall engagement rate as a decimal (e.g. 0.05 for 5%)."
+          },
+          "date_range": {
+            "type": "string",
+            "description": "The time period for the benchmark data."
+          }
+        }
+      },
+      "TrendingItem": {
+        "type": "object",
+        "description": "A trending hashtag or content item",
+        "properties": {
+          "hashtag_id": {
+            "type": "string",
+            "description": "Unique identifier for the trending hashtag."
+          },
+          "hashtag_name": {
+            "type": "string",
+            "description": "The hashtag text."
+          },
+          "rank_position": {
+            "type": "integer",
+            "description": "Current rank position in trending list."
+          },
+          "rank_change": {
+            "type": "integer",
+            "description": "Change in rank position (positive = moved up)."
+          },
+          "views": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total views in the selected period."
+          },
+          "views_global_lifetime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total lifetime views globally."
+          },
+          "posts": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Number of posts using this hashtag in the period."
+          },
+          "posts_global_lifetime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total lifetime posts globally."
+          },
+          "top_country_list": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Top countries where this hashtag is trending."
+          },
+          "trending_history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "format": "date",
+                  "description": "Date of the data point."
+                },
+                "rank_position_daily": {
+                  "type": "integer",
+                  "description": "Rank position for that day."
+                },
+                "views_daily": {
+                  "type": "integer",
+                  "format": "int64",
+                  "description": "Views for that day."
+                }
+              }
+            },
+            "description": "Daily trending history data."
+          }
+        }
+      },
+      "TrendingSearchData": {
+        "type": "object",
+        "description": "Trending content search response data",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrendingItem"
+            },
+            "description": "Array of trending items."
+          },
+          "filter_info": {
+            "type": "object",
+            "properties": {
+              "country_code": {
+                "type": "string",
+                "description": "The country code used for filtering."
+              },
+              "category_name": {
+                "type": "string",
+                "description": "The category used for filtering."
+              },
+              "date_range": {
+                "type": "string",
+                "description": "The date range used for filtering."
+              }
+            },
+            "description": "Applied filter information."
+          },
+          "cursor": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Cursor for the next page."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether there are more results available."
+          }
+        }
+      },
+      "TrendingKeyword": {
+        "type": "object",
+        "description": "A trending keyword/search term",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "The trending keyword."
+          },
+          "search_volume": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Search volume for the keyword in the period."
+          },
+          "trend_score": {
+            "type": "number",
+            "format": "float",
+            "description": "Trending score indicating relative popularity."
+          },
+          "related_hashtags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Related hashtags for the keyword."
+          }
+        }
+      },
+      "TrendingKeywordData": {
+        "type": "object",
+        "description": "Trending keyword search response data",
+        "properties": {
+          "keywords": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrendingKeyword"
+            },
+            "description": "Array of trending keyword objects."
+          },
+          "cursor": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Cursor for the next page."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether there are more results available."
+          }
+        }
+      }
+    }
+  }
+}
