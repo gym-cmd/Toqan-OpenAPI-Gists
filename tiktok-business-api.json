@@ -55,36 +55,16 @@
     }
   ],
   "paths": {
-    "/tt_user/token_info/get/": {
-      "post": {
-        "operationId": "getTokenInfo",
-        "summary": "Get authenticated user info from access token",
-        "description": "Returns the app_id, scopes, and creator_id associated with the current access token. Use the returned creator_id as the business_id parameter in other API calls.",
+    "/user/info/": {
+      "get": {
+        "operationId": "getCurrentUser",
+        "summary": "Get current user information",
+        "description": "Returns profile information about the authenticated user. Use the returned core_user_id as the business_id parameter in other API calls.",
         "tags": ["Account"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["app_id", "access_token"],
-                "properties": {
-                  "app_id": {
-                    "type": "string",
-                    "description": "ID of your developer app. Find it in My Apps > App Detail > Basic Information."
-                  },
-                  "access_token": {
-                    "type": "string",
-                    "description": "The access token obtained from the OAuth flow."
-                  }
-                }
-              }
-            }
-          }
-        },
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Successful response with token info",
+            "description": "Successful response with user info",
             "content": {
               "application/json": {
                 "schema": {
@@ -96,17 +76,27 @@
                         "data": {
                           "type": "object",
                           "properties": {
-                            "app_id": {
+                            "display_name": {
                               "type": "string",
-                              "description": "ID of the developer application."
+                              "description": "The user's display name."
                             },
-                            "creator_id": {
+                            "email": {
                               "type": "string",
-                              "description": "Application-specific unique ID of the TikTok account. Use this value as the business_id parameter in Accounts API requests."
+                              "description": "The user's email address (may be partially masked)."
                             },
-                            "scope": {
+                            "core_user_id": {
                               "type": "string",
-                              "description": "Comma-separated list of permission scopes granted to this token."
+                              "description": "The TikTok for Business user ID for the app developer."
+                            },
+                            "create_time": {
+                              "type": "integer",
+                              "format": "int64",
+                              "description": "The user's account creation time as a Unix timestamp."
+                            },
+                            "avatar_url": {
+                              "type": "string",
+                              "format": "uri",
+                              "description": "URL of the user's avatar image."
                             }
                           }
                         }
