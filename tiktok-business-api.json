@@ -1299,15 +1299,24 @@
             "refreshUrl": "https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/refresh_token/",
             "scopes": {
               "user.info.basic": "Read basic profile info (display name, avatar, open ID)",
+              "user.info.username": "Read the username of the TikTok account",
               "user.info.profile": "Read extended profile data (bio, verification status, profile links)",
               "user.info.stats": "Read statistical data (follower count, following count, video count, likes)",
+              "user.account.type": "Read the account type of the TikTok account",
               "user.insights": "Access user engagement insights and analytics",
               "video.list": "Read user's public videos on TikTok",
               "video.insights": "Access detailed video performance metrics",
               "video.publish": "Directly post content to a user's TikTok profile",
               "video.upload": "Share content as a draft for editing before posting",
               "comment.list": "Read comments on videos",
-              "comment.list.manage": "Create, delete, hide, like, and pin comments"
+              "comment.list.manage": "Create, delete, hide, like, and pin comments",
+              "biz.ads.recommend": "Get Spark Ads video recommendations",
+              "biz.brand.insights": "Access brand insights and analytics",
+              "biz.spark.auth": "Manage Spark Ads authorization",
+              "biz.creator.info": "Read creator profile information",
+              "biz.creator.insights": "Access creator performance insights",
+              "discovery.search.words": "Search trending keywords and content",
+              "tto.campaign.link": "Link videos to TikTok One Creator Marketplace campaigns"
             }
           }
         }
