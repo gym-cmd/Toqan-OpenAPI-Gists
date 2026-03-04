@@ -1291,10 +1291,10 @@
     "securitySchemes": {
       "tiktok_oauth": {
         "type": "oauth2",
-        "description": "OAuth 2.0 authorization code flow for TikTok Business Accounts.\n\nNon-standard behaviors:\n- Authorization request: uses `app_id` instead of `client_id` as the query parameter\n- Token exchange: uses standard `client_id` and `client_secret` in the JSON body (POST to /tt_user/oauth2/token/)\n- Token refresh: separate endpoint at /tt_user/oauth2/refresh_token/ with `client_id`, `client_secret`, `grant_type=refresh_token`, and `refresh_token`\n- Access token delivery: passed via the `Access-Token` header (not the standard `Authorization: Bearer` header)\n\nAccess tokens are valid for 24 hours; refresh tokens are valid for 1 year.",
+        "description": "OAuth 2.0 authorization code flow for TikTok Business Accounts.\n\nThe authorization URL uses the TikTok account holder flow. The token and refresh endpoints use the Business API.\n\nNon-standard behaviors (configure via MCP URL query params oauthClientIdParam, oauthCodeParam, oauthTokenFormat, oauthTokenHeader):\n- Authorization request: uses `client_key` instead of `client_id`\n- Token exchange: uses `auth_code` instead of `code`, JSON body instead of form-urlencoded\n- Access token delivery: passed via the `Access-Token` header (not `Authorization: Bearer`)\n\nAccess tokens are valid for 24 hours; refresh tokens are valid for 1 year.",
         "flows": {
           "authorizationCode": {
-            "authorizationUrl": "https://business-api.tiktok.com/portal/auth",
+            "authorizationUrl": "https://www.tiktok.com/v2/auth/authorize/",
             "tokenUrl": "https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/token/",
             "refreshUrl": "https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/refresh_token/",
             "scopes": {
@@ -1310,9 +1310,7 @@
               "comment.list.manage": "Create, delete, hide, like, and pin comments"
             }
           }
-        },
-        "x-client-id-name": "app_id",
-        "x-access-token-header": "Access-Token"
+        }
       }
     },
     "parameters": {
