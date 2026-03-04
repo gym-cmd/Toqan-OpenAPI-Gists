@@ -1,0 +1,4417 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Lightspeed Restaurant L-Series API",
+    "description": "REST API for Lightspeed Restaurant L-Series (legacy restaurant POS). Provides access to company data, customers, products, orders, receipts, reservations, labour, and analytics. Access is limited to approved partners and developers.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Lightspeed Developer Support",
+      "url": "https://developers.lightspeedhq.com/resto-api/introduction/gettingstarted"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://test.lightspeedapis.com",
+      "description": "Staging"
+    },
+    {
+      "url": "https://lightspeedapis.com",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "lightspeed_oauth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "OAuth2 token management"
+    },
+    {
+      "name": "Analytics",
+      "description": "Product sales reporting"
+    },
+    {
+      "name": "Company",
+      "description": "Company information"
+    },
+    {
+      "name": "Customer",
+      "description": "Customer management and credits"
+    },
+    {
+      "name": "Establishment",
+      "description": "Multi-location establishments"
+    },
+    {
+      "name": "Floor",
+      "description": "Restaurant floor plans"
+    },
+    {
+      "name": "Table",
+      "description": "Table information and status"
+    },
+    {
+      "name": "PaymentType",
+      "description": "Payment type configuration"
+    },
+    {
+      "name": "Financial",
+      "description": "Receipt and transaction data"
+    },
+    {
+      "name": "Product",
+      "description": "Menu item/product management"
+    },
+    {
+      "name": "ProductGroup",
+      "description": "Product categories"
+    },
+    {
+      "name": "Labour",
+      "description": "Employee and time clock data"
+    },
+    {
+      "name": "LiteserverConversion",
+      "description": "Liteserver ID conversion"
+    },
+    {
+      "name": "OnlineOrdering",
+      "description": "Online order management"
+    },
+    {
+      "name": "Reservation",
+      "description": "Table reservation management"
+    }
+  ],
+  "paths": {
+    "/resto/oauth2/v1/token": {
+      "post": {
+        "operationId": "requestToken",
+        "summary": "Request or refresh an access token",
+        "description": "Obtain an access token using either an authorization_code grant (initial token request with PKCE) or a refresh_token grant (token refresh). Use grant_type=authorization_code with code, code_verifier, and redirect_uri for initial authentication. Use grant_type=refresh_token with refresh_token for subsequent refreshes. Both flows require HTTP Basic authentication with client_id as username and client_secret as password.",
+        "tags": ["Authentication"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token issued successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/financial/analytics/productsales": {
+      "get": {
+        "operationId": "listProductSales",
+        "summary": "List product sales analytics",
+        "description": "Retrieve aggregated product sales data for a given date range. Each record includes the product name, VAT, quantity sold, prices, cost, and profit.",
+        "tags": ["Analytics"],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "description": "Start date for the report (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "description": "End date for the report (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Single date for the report (YYYY-MM-DD). Alternative to from/to range.",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product sales data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductSales"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/company": {
+      "get": {
+        "operationId": "listCompanies",
+        "summary": "List all companies",
+        "description": "Retrieve all companies accessible to the authenticated user.",
+        "tags": ["Company"],
+        "responses": {
+          "200": {
+            "description": "List of companies",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Company"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/company/{companyId}": {
+      "get": {
+        "operationId": "getCompany",
+        "summary": "Get a single company",
+        "description": "Retrieve details for a specific company by its ID.",
+        "tags": ["Company"],
+        "parameters": [
+          {
+            "name": "companyId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier for the company",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Company details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Company"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateCompany",
+        "summary": "Update company settings",
+        "description": "Partially update a company using JSON Patch operations. Commonly used to configure PMS integration settings (genericPmsApiUrl, genericPmsApiUser, genericPmsApiPassword).",
+        "tags": ["Company"],
+        "parameters": [
+          {
+            "name": "companyId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier for the company",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonPatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated company",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Company"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/customer": {
+      "get": {
+        "operationId": "listCustomers",
+        "summary": "List all customers",
+        "description": "Retrieve a paginated list of customers. Supports filtering by text query, email, and modification date.",
+        "tags": ["Customer"],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Search term to filter customers by name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Filter customers by email address",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modifiedSince",
+            "in": "query",
+            "description": "Return only customers modified after this timestamp (ISO-8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "sortField",
+            "in": "query",
+            "description": "Field to sort results by",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortDirection",
+            "in": "query",
+            "description": "Sort direction (asc or desc)",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"]
+            }
+          },
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of customers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginatedResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "results": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Customer"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCustomer",
+        "summary": "Create a customer",
+        "description": "Create a new customer record. Returns the integer ID of the newly created customer.",
+        "tags": ["Customer"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Customer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Customer created; body contains the new customer ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "description": "Newly created customer ID"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/customer/{id}": {
+      "get": {
+        "operationId": "getCustomer",
+        "summary": "Get a single customer",
+        "description": "Retrieve details for a specific customer by their ID.",
+        "tags": ["Customer"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the customer",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateCustomer",
+        "summary": "Update an existing customer",
+        "description": "Replace all mutable fields of an existing customer. The request body must include the customer id.",
+        "tags": ["Customer"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the customer",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Customer updated successfully"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/customer/{id}/credit": {
+      "get": {
+        "operationId": "getCustomerCredit",
+        "summary": "Get current credit balance for a customer",
+        "description": "Retrieve the current credit balance for a specific customer. Returns a single number.",
+        "tags": ["Customer"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the customer",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current credit balance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number",
+                  "description": "The customer's credit balance"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/customer/{id}/creditchange": {
+      "get": {
+        "operationId": "listCustomerCreditChanges",
+        "summary": "List credit changes for a customer",
+        "description": "Retrieve a paginated list of credit change records for a specific customer.",
+        "tags": ["Customer"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the customer",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of credit changes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginatedResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "results": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/CreditChange"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCustomerCreditChange",
+        "summary": "Create a credit change for a customer",
+        "description": "Add or subtract credits from a customer's balance.",
+        "tags": ["Customer"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the customer",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["change"],
+                "properties": {
+                  "change": {
+                    "type": "number",
+                    "description": "Amount to add (positive) or subtract (negative) from the customer's credits"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Credit change created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditChange"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/customer/{id}/loyaltycard": {
+      "post": {
+        "operationId": "createLoyaltyCard",
+        "summary": "Create a loyalty card for a customer",
+        "description": "Assign a loyalty card to a customer by barcode.",
+        "tags": ["Customer"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the customer",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["barcode"],
+                "properties": {
+                  "barcode": {
+                    "type": "string",
+                    "description": "Barcode value for the loyalty card"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Loyalty card created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerCard"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/customer/{id}/loyaltycard/{loyaltyCardUUID}": {
+      "delete": {
+        "operationId": "deleteLoyaltyCard",
+        "summary": "Delete a loyalty card from a customer",
+        "description": "Remove a loyalty card from a customer by its UUID.",
+        "tags": ["Customer"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the customer",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "loyaltyCardUUID",
+            "in": "path",
+            "required": true,
+            "description": "The UUID of the loyalty card",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Loyalty card deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/customer/{customerId}/activate": {
+      "post": {
+        "operationId": "activateCustomer",
+        "summary": "Reactivate a customer",
+        "description": "Reactivate a previously deactivated customer.",
+        "tags": ["Customer"],
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the customer",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer reactivated"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/establishment": {
+      "get": {
+        "operationId": "listEstablishments",
+        "summary": "List establishments",
+        "description": "Retrieve all establishments (locations) belonging to the company.",
+        "tags": ["Establishment"],
+        "responses": {
+          "200": {
+            "description": "List of establishments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Establishment"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/floor": {
+      "get": {
+        "operationId": "listFloors",
+        "summary": "List all floors",
+        "description": "Retrieve a paginated list of restaurant floor plans with their tables.",
+        "tags": ["Floor"],
+        "parameters": [
+          {
+            "name": "visible",
+            "in": "query",
+            "description": "Whether to include non-visible floors. Default is true; use false for all floors.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of floors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginatedResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "results": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Floor"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/floor/{id}": {
+      "get": {
+        "operationId": "getFloor",
+        "summary": "Get a single floor",
+        "description": "Retrieve details for a specific floor by its ID.",
+        "tags": ["Floor"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the floor",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Floor details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Floor"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/floor/{id}/table": {
+      "get": {
+        "operationId": "listFloorTables",
+        "summary": "List tables for a specific floor",
+        "description": "Retrieve a paginated list of tables belonging to a specific floor.",
+        "tags": ["Table"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the floor",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "visible",
+            "in": "query",
+            "description": "Whether to return non-visible tables. Default is true; use false for all tables.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withStatus",
+            "in": "query",
+            "description": "Include table status information in the response",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of tables",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginatedResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "results": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Table"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/table/{id}": {
+      "get": {
+        "operationId": "getTable",
+        "summary": "Get a single table",
+        "description": "Retrieve details for a specific table by its ID.",
+        "tags": ["Table"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The identifier of the table",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Table details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Table"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/core/paymenttype": {
+      "post": {
+        "operationId": "createPaymentType",
+        "summary": "Create a payment type",
+        "description": "Create a new payment type. Returns the integer ID of the newly created payment type.",
+        "tags": ["PaymentType"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentTypeCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment type created; body contains the new payment type ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "description": "Newly created payment type ID"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/financial/receipt/": {
+      "get": {
+        "operationId": "listReceipts",
+        "summary": "List receipts",
+        "description": "Retrieve receipts for a certain date or date range. Supports filtering by status, customer, and modification date.",
+        "tags": ["Financial"],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Single date to retrieve receipts for (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Start date of the range (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "End date of the range (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "useModification",
+            "in": "query",
+            "description": "If true, date filters apply to modification time instead of creation time",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter receipts by status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "receiptId",
+            "in": "query",
+            "description": "Filter by specific receipt ID",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "customerId",
+            "in": "query",
+            "description": "Filter by customer ID",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "customerUuid",
+            "in": "query",
+            "description": "Filter by customer UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modifiedSince",
+            "in": "query",
+            "description": "Return only receipts modified after this timestamp (ISO-8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "condenseItems",
+            "in": "query",
+            "description": "If true, condense duplicate line items into single entries with aggregated amounts",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of receipts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Receipt"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/inventory/product": {
+      "get": {
+        "operationId": "listProducts",
+        "summary": "List all products",
+        "description": "Retrieve a list of products (menu items). Supports filtering by name and pagination.",
+        "tags": ["Product"],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Search term to filter products by name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/inventory/product/{productId}": {
+      "get": {
+        "operationId": "getProduct",
+        "summary": "Get a single product",
+        "description": "Retrieve details for a specific product by its ID.",
+        "tags": ["Product"],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the product",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "patchProduct",
+        "summary": "Partially update a product",
+        "description": "Partially update a product using JSON Patch operations.",
+        "tags": ["Product"],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the product",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonPatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateProduct",
+        "summary": "Update a product",
+        "description": "Replace all mutable fields of an existing product.",
+        "tags": ["Product"],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the product",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteProduct",
+        "summary": "Delete a product",
+        "description": "Delete a specific product by its ID.",
+        "tags": ["Product"],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the product",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Product deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/inventory/product/{productId}/subproduct": {
+      "get": {
+        "operationId": "listSubproducts",
+        "summary": "List subproducts of a product",
+        "description": "Retrieve all subproducts (child items) associated with a specific product.",
+        "tags": ["Product"],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the parent product",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of subproducts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SubProduct"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "post": {
+        "operationId": "addMultipleSubproducts",
+        "summary": "Add multiple subproducts to a product",
+        "description": "Associate multiple subproducts with a parent product by providing an array of subproduct IDs.",
+        "tags": ["Product"],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the parent product",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "description": "Array of subproduct IDs to add"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subproducts added"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "removeMultipleSubproducts",
+        "summary": "Remove multiple subproducts from a product",
+        "description": "Remove multiple subproduct associations from a parent product by providing an array of subproduct IDs.",
+        "tags": ["Product"],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the parent product",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "description": "Array of subproduct IDs to remove"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subproducts removed"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/inventory/product/{productId}/subproduct/{subProductId}": {
+      "post": {
+        "operationId": "addSubproduct",
+        "summary": "Add a subproduct to a product",
+        "description": "Associate a single subproduct with a parent product.",
+        "tags": ["Product"],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the parent product",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "subProductId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the subproduct",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subproduct added"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "removeSubproduct",
+        "summary": "Remove a subproduct from a product",
+        "description": "Remove a single subproduct association from a parent product.",
+        "tags": ["Product"],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the parent product",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "subProductId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the subproduct",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Subproduct removed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/inventory/additions": {
+      "get": {
+        "operationId": "listAdditions",
+        "summary": "List additions (modifiers)",
+        "description": "Retrieve all additions (modifiers) available in the inventory, including their values and linked products.",
+        "tags": ["Product"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of additions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Addition"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/inventory/timed-events": {
+      "get": {
+        "operationId": "listTimedEvents",
+        "summary": "List timed events",
+        "description": "Retrieve timed events (e.g., happy hours, promotions) that apply price adjustments to products on a schedule.",
+        "tags": ["Product"],
+        "parameters": [
+          {
+            "name": "includePastEvents",
+            "in": "query",
+            "description": "Whether to include events that have already ended",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of timed events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TimedEvent"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/inventory/modification-times": {
+      "get": {
+        "operationId": "getModificationTimes",
+        "summary": "Get modification times",
+        "description": "Retrieve the last modification timestamps for products, product groups, modifiers, and timed events. Useful for cache invalidation.",
+        "tags": ["Product"],
+        "responses": {
+          "200": {
+            "description": "Modification timestamps",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModificationTimes"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/inventory/productgroup": {
+      "get": {
+        "operationId": "listProductGroups",
+        "summary": "List all product groups",
+        "description": "Retrieve a list of product groups (categories). Supports filtering by name and pagination.",
+        "tags": ["ProductGroup"],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Search term to filter product groups by name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of product groups",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductGroup"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/inventory/productgroup/{productgroupId}": {
+      "get": {
+        "operationId": "getProductGroup",
+        "summary": "Get a single product group",
+        "description": "Retrieve details for a specific product group by its ID.",
+        "tags": ["ProductGroup"],
+        "parameters": [
+          {
+            "name": "productgroupId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the product group",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product group details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductGroup"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/inventory/productgroup/{productgroupId}/product": {
+      "get": {
+        "operationId": "listProductGroupProducts",
+        "summary": "List products within a product group",
+        "description": "Retrieve products belonging to a specific product group.",
+        "tags": ["ProductGroup"],
+        "parameters": [
+          {
+            "name": "productgroupId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the product group",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Search term to filter products by name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of products in the group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createProductInGroup",
+        "summary": "Create a product in a product group",
+        "description": "Create a new product and add it to the specified product group.",
+        "tags": ["ProductGroup"],
+        "parameters": [
+          {
+            "name": "productgroupId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the product group",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created in group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/labour/clocktime": {
+      "get": {
+        "operationId": "listClocktimes",
+        "summary": "List clock times",
+        "description": "Retrieve clock-in/clock-out records for all users. Supports filtering by time range and modification date.",
+        "tags": ["Labour"],
+        "parameters": [
+          {
+            "name": "minClockInTime",
+            "in": "query",
+            "description": "Minimum clock-in time filter (ISO-8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "maxClockOutTime",
+            "in": "query",
+            "description": "Maximum clock-out time filter (ISO-8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "changedSince",
+            "in": "query",
+            "description": "Return only records changed after this timestamp (ISO-8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of clock time records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClockTime"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/labour/clocktime/{userid}": {
+      "get": {
+        "operationId": "getUserClocktimes",
+        "summary": "Get clock times for a specific user",
+        "description": "Retrieve clock-in/clock-out records for a specific user.",
+        "tags": ["Labour"],
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the user",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "minClockInTime",
+            "in": "query",
+            "description": "Minimum clock-in time filter (ISO-8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "maxClockOutTime",
+            "in": "query",
+            "description": "Maximum clock-out time filter (ISO-8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "changedSince",
+            "in": "query",
+            "description": "Return only records changed after this timestamp (ISO-8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of clock time records for the user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClockTime"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/labour/employee": {
+      "get": {
+        "operationId": "listEmployees",
+        "summary": "List employees",
+        "description": "Retrieve a list of employees. Supports filtering by visibility and pagination.",
+        "tags": ["Labour"],
+        "parameters": [
+          {
+            "name": "visible",
+            "in": "query",
+            "description": "Whether to include non-visible employees",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of employees",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Employee"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/labour/employee/{userid}": {
+      "get": {
+        "operationId": "getEmployee",
+        "summary": "Get a specific employee",
+        "description": "Retrieve details for a specific employee by their user ID.",
+        "tags": ["Labour"],
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the employee (user ID)",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Employee details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Employee"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/liteserverConversion/receipt/{liteserverReceiptId}": {
+      "get": {
+        "operationId": "convertLiteserverReceiptId",
+        "summary": "Convert a liteserver receipt ID",
+        "description": "Convert a liteserver receipt ID to the cloud receipt ID. Returns the cloud receipt ID as an integer.",
+        "tags": ["LiteserverConversion"],
+        "parameters": [
+          {
+            "name": "liteserverReceiptId",
+            "in": "path",
+            "required": true,
+            "description": "The liteserver receipt ID to convert",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cloud receipt ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "description": "The cloud receipt ID"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/onlineordering/order": {
+      "get": {
+        "operationId": "listOnlineOrders",
+        "summary": "List online orders",
+        "description": "Retrieve a list of all online orders. Supports filtering by status and creation date.",
+        "tags": ["OnlineOrdering"],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by order status (ACCEPTED, DENIED, AWAITING_PROCESSING, PROCESSED)",
+            "schema": {
+              "type": "string",
+              "enum": ["ACCEPTED", "DENIED", "AWAITING_PROCESSING", "PROCESSED"]
+            }
+          },
+          {
+            "name": "createdSince",
+            "in": "query",
+            "description": "Return orders created after this timestamp (ISO-8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of online orders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OnlineOrder"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/onlineordering/order/{orderId}": {
+      "get": {
+        "operationId": "getOnlineOrder",
+        "summary": "Get a single online order",
+        "description": "Retrieve details for a specific online order by its ID.",
+        "tags": ["OnlineOrdering"],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the order",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Online order details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnlineOrder"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/onlineordering/customer/{customerId}/order": {
+      "get": {
+        "operationId": "listCustomerOnlineOrders",
+        "summary": "List online orders for a customer",
+        "description": "Retrieve online orders belonging to a specific customer.",
+        "tags": ["OnlineOrdering"],
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the customer",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by order status",
+            "schema": {
+              "type": "string",
+              "enum": ["ACCEPTED", "DENIED", "AWAITING_PROCESSING", "PROCESSED"]
+            }
+          },
+          {
+            "name": "createdSince",
+            "in": "query",
+            "description": "Return orders created after this timestamp (ISO-8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of customer online orders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OnlineOrder"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createOnlineOrder",
+        "summary": "Create an online order for a customer",
+        "description": "Create a new online order for a specific customer. Returns the integer ID of the newly created order.",
+        "tags": ["OnlineOrdering"],
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the customer",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnlineOrderCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order created; body contains the new order ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "description": "Newly created order ID"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/onlineordering/customer/{customerId}/order/{orderId}": {
+      "get": {
+        "operationId": "getCustomerOnlineOrder",
+        "summary": "Get a specific order for a customer",
+        "description": "Retrieve details for a specific online order belonging to a customer.",
+        "tags": ["OnlineOrdering"],
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the customer",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the order",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Online order details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnlineOrder"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateOnlineOrder",
+        "summary": "Update an online order",
+        "description": "Partially update an online order for a customer (e.g., change status).",
+        "tags": ["OnlineOrdering"],
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the customer",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the order",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnlineOrderUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnlineOrder"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/onlineordering/customer/{customerId}/establishmentorder": {
+      "post": {
+        "operationId": "createEstablishmentOrder",
+        "summary": "Create an establishment order for a customer",
+        "description": "Create a new order for a specific establishment and customer. Uses PLU codes instead of product IDs. Returns the integer ID of the newly created order.",
+        "tags": ["OnlineOrdering"],
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "description": "The numerical identifier of the customer",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnlineOrderCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Establishment order created; body contains the new order ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "description": "Newly created order ID"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/resto/rest/onlineordering/paymenttype": {
+      "get": {
+        "operationId": "listOnlinePaymentTypes",
+        "summary": "List available online payment types",
+        "description": "Retrieve all payment types available for online ordering.",
+        "tags": ["OnlineOrdering"],
+        "responses": {
+          "200": {
+            "description": "List of online payment types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OnlinePaymentType"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/onlineordering/taxclass": {
+      "get": {
+        "operationId": "listTaxClasses",
+        "summary": "List available tax classes",
+        "description": "Retrieve all tax classes configured for online ordering.",
+        "tags": ["OnlineOrdering"],
+        "responses": {
+          "200": {
+            "description": "List of tax classes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaxClass"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/onlineordering/order-calculations": {
+      "post": {
+        "operationId": "calculateOrderTax",
+        "summary": "Calculate order tax",
+        "description": "Calculate tax totals for an order without creating it. Useful for previewing tax amounts before submission.",
+        "tags": ["OnlineOrdering"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnlineOrderCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tax calculation results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Tax calculation result with breakdown"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/reservation": {
+      "get": {
+        "operationId": "listReservations",
+        "summary": "List reservations",
+        "description": "Retrieve a paginated list of reservations. Supports filtering by date, floor, table, customer, user, and modification time.",
+        "tags": ["Reservation"],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Filter by reservation date (ISO-8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "floorId",
+            "in": "query",
+            "description": "Filter by floor ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tableId",
+            "in": "query",
+            "description": "Filter by table ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modifiedSince",
+            "in": "query",
+            "description": "Return only reservations modified after this timestamp (ISO-8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "description": "Filter by user ID who created the reservation",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerId",
+            "in": "query",
+            "description": "Filter by customer ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "changedAfter",
+            "in": "query",
+            "description": "Return reservations changed after this timestamp (ISO-8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/amountParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of reservations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginatedResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "results": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Reservation"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createReservation",
+        "summary": "Create a reservation",
+        "description": "Create a new table reservation.",
+        "tags": ["Reservation"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Reservation created; body contains the new reservation ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "description": "Newly created reservation ID"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/reservation/configuration": {
+      "get": {
+        "operationId": "getReservationConfiguration",
+        "summary": "Get reservation configuration",
+        "description": "Retrieve the reservation configuration settings for the establishment.",
+        "tags": ["Reservation"],
+        "responses": {
+          "200": {
+            "description": "Reservation configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationConfiguration"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/resto/rest/reservation/freetable": {
+      "get": {
+        "operationId": "listFreeTables",
+        "summary": "List free tables",
+        "description": "Retrieve tables that are available for a specific date, time range, and minimum seating capacity.",
+        "tags": ["Reservation"],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "description": "The date to check availability (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "startTime",
+            "in": "query",
+            "description": "Start time for the reservation window (HH:mm)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endTime",
+            "in": "query",
+            "description": "End time for the reservation window (HH:mm)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minimumSeats",
+            "in": "query",
+            "description": "Minimum number of seats required",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of free tables",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Table"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "lightspeed_oauth": {
+        "type": "oauth2",
+        "description": "OAuth2 Authorization Code with PKCE",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://lightspeedapis.com/resto/oauth2/v1/authorize",
+            "tokenUrl": "https://lightspeedapis.com/resto/oauth2/v1/token",
+            "scopes": {}
+          }
+        }
+      }
+    },
+    "parameters": {
+      "amountParam": {
+        "name": "amount",
+        "in": "query",
+        "description": "Number of results to return",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "offsetParam": {
+        "name": "offset",
+        "in": "query",
+        "description": "Starting position of first record",
+        "schema": {
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Authentication required or token invalid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "description": "Standard error response from the API",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error code or type"
+          },
+          "error_description": {
+            "type": "string",
+            "description": "Human-readable description of the error"
+          }
+        }
+      },
+      "TokenRequest": {
+        "type": "object",
+        "description": "OAuth2 token request body. Use grant_type=authorization_code for initial token or grant_type=refresh_token for refresh.",
+        "required": ["grant_type"],
+        "properties": {
+          "grant_type": {
+            "type": "string",
+            "description": "OAuth2 grant type",
+            "enum": ["authorization_code", "refresh_token"]
+          },
+          "redirect_uri": {
+            "type": "string",
+            "description": "Client redirect URI (required for authorization_code grant)"
+          },
+          "code": {
+            "type": "string",
+            "description": "Authorization code from the redirect (required for authorization_code grant)"
+          },
+          "code_verifier": {
+            "type": "string",
+            "description": "PKCE code verifier, base64url encoded (required for authorization_code grant)"
+          },
+          "refresh_token": {
+            "type": "string",
+            "description": "Refresh token from a previous token response (required for refresh_token grant)"
+          }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "description": "OAuth2 token response containing access and refresh tokens",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "description": "JWT access token for authenticating API requests"
+          },
+          "refresh_token": {
+            "type": "string",
+            "description": "Token used to obtain a new access token when it expires"
+          },
+          "expires_in": {
+            "type": "integer",
+            "description": "Number of seconds until the access token expires (typically 3600)"
+          }
+        }
+      },
+      "PaginatedResponse": {
+        "type": "object",
+        "description": "Generic wrapper for paginated results",
+        "properties": {
+          "results": {
+            "type": "array",
+            "description": "Array of result items",
+            "items": {}
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Maximum number of results requested"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Starting position of the first record"
+          },
+          "total": {
+            "type": "integer",
+            "description": "Total number of records available"
+          }
+        }
+      },
+      "Company": {
+        "type": "object",
+        "description": "A Lightspeed Restaurant company (business entity)",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique company identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Company name"
+          },
+          "vatInclusive": {
+            "type": "boolean",
+            "description": "Whether prices include VAT"
+          },
+          "openingTime": {
+            "type": "string",
+            "description": "Daily opening time in HH:mm format"
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "IANA time zone identifier"
+          },
+          "streetName": {
+            "type": "string",
+            "description": "Street name of the company address"
+          },
+          "streetNumber": {
+            "type": "string",
+            "description": "Street number of the company address"
+          },
+          "zipCode": {
+            "type": "string",
+            "description": "Postal/ZIP code"
+          },
+          "city": {
+            "type": "string",
+            "description": "City name"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country name"
+          },
+          "server": {
+            "type": "string",
+            "description": "Backend server hostname"
+          },
+          "creationTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the company was created"
+          },
+          "enforceLiteserver": {
+            "type": "boolean",
+            "description": "Whether liteserver mode is enforced"
+          },
+          "enforceCloud": {
+            "type": "boolean",
+            "description": "Whether cloud mode is enforced"
+          },
+          "globalId": {
+            "type": "integer",
+            "description": "Global identifier across Lightspeed systems"
+          }
+        }
+      },
+      "Establishment": {
+        "type": "object",
+        "description": "An individual location/establishment within a company",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique establishment identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Establishment name"
+          },
+          "vatInclusive": {
+            "type": "boolean",
+            "description": "Whether prices include VAT"
+          },
+          "openingTime": {
+            "type": "string",
+            "description": "Daily opening time in HH:mm format"
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "IANA time zone identifier"
+          },
+          "streetName": {
+            "type": "string",
+            "description": "Street name of the establishment address"
+          },
+          "streetNumber": {
+            "type": "string",
+            "description": "Street number of the establishment address"
+          },
+          "zipCode": {
+            "type": "string",
+            "description": "Postal/ZIP code"
+          },
+          "city": {
+            "type": "string",
+            "description": "City name"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country name"
+          },
+          "server": {
+            "type": "string",
+            "description": "Backend server hostname"
+          },
+          "creationTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the establishment was created"
+          },
+          "enforceLiteserver": {
+            "type": "boolean",
+            "description": "Whether liteserver mode is enforced"
+          },
+          "enforceCloud": {
+            "type": "boolean",
+            "description": "Whether cloud mode is enforced"
+          },
+          "globalId": {
+            "type": "integer",
+            "description": "Global identifier across Lightspeed systems"
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "description": "A customer record with contact, delivery, and loyalty information",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique customer identifier"
+          },
+          "uuid": {
+            "type": "string",
+            "description": "Universally unique identifier for the customer"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "Customer first name"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Customer last name"
+          },
+          "street": {
+            "type": "string",
+            "description": "Street address"
+          },
+          "streetNumber": {
+            "type": "string",
+            "description": "Street number"
+          },
+          "zip": {
+            "type": "string",
+            "description": "Postal/ZIP code"
+          },
+          "city": {
+            "type": "string",
+            "description": "City name"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country name"
+          },
+          "telephone": {
+            "type": "string",
+            "description": "Phone number"
+          },
+          "deliveryStreet": {
+            "type": "string",
+            "description": "Delivery street address"
+          },
+          "deliveryStreetNumber": {
+            "type": "string",
+            "description": "Delivery street number"
+          },
+          "deliveryZip": {
+            "type": "string",
+            "description": "Delivery postal/ZIP code"
+          },
+          "deliveryCity": {
+            "type": "string",
+            "description": "Delivery city"
+          },
+          "deliveryCountry": {
+            "type": "string",
+            "description": "Delivery country"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address"
+          },
+          "credits": {
+            "type": "number",
+            "description": "Current credit balance"
+          },
+          "companyId": {
+            "type": "integer",
+            "description": "ID of the company this customer belongs to"
+          },
+          "modificationTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last modification timestamp"
+          },
+          "note": {
+            "type": "string",
+            "description": "Free-form notes about the customer"
+          },
+          "vatNumber": {
+            "type": "string",
+            "description": "VAT registration number"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "description": "Date of birth"
+          },
+          "language": {
+            "type": "string",
+            "description": "Preferred language"
+          },
+          "customerCards": {
+            "type": "array",
+            "description": "Loyalty and gift cards associated with this customer",
+            "items": {
+              "$ref": "#/components/schemas/CustomerCard"
+            }
+          }
+        }
+      },
+      "CustomerUpdate": {
+        "type": "object",
+        "description": "Fields for updating an existing customer",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Customer identifier (must match path parameter)"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "Customer first name"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Customer last name"
+          },
+          "street": {
+            "type": "string",
+            "description": "Street address"
+          },
+          "streetNumber": {
+            "type": "string",
+            "description": "Street number"
+          },
+          "zip": {
+            "type": "string",
+            "description": "Postal/ZIP code"
+          },
+          "city": {
+            "type": "string",
+            "description": "City name"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country name"
+          },
+          "telephone": {
+            "type": "string",
+            "description": "Phone number"
+          },
+          "deliveryStreet": {
+            "type": "string",
+            "description": "Delivery street address"
+          },
+          "deliveryStreetNumber": {
+            "type": "string",
+            "description": "Delivery street number"
+          },
+          "deliveryZip": {
+            "type": "string",
+            "description": "Delivery postal/ZIP code"
+          },
+          "deliveryCity": {
+            "type": "string",
+            "description": "Delivery city"
+          },
+          "deliveryCountry": {
+            "type": "string",
+            "description": "Delivery country"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address"
+          }
+        }
+      },
+      "CustomerCard": {
+        "type": "object",
+        "description": "A loyalty or gift card associated with a customer",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "description": "Unique identifier for the card"
+          },
+          "companyId": {
+            "type": "integer",
+            "description": "Company the card belongs to"
+          },
+          "mainEstablishmentMasterId": {
+            "type": "integer",
+            "description": "ID of the main establishment where the card was issued"
+          },
+          "creationUserId": {
+            "type": "integer",
+            "description": "ID of the user who created the card"
+          },
+          "code": {
+            "type": "string",
+            "description": "Barcode or card code"
+          },
+          "type": {
+            "type": "string",
+            "description": "Card type (e.g., LOYALTY_VALUE_CARD)"
+          },
+          "generatedDate": {
+            "type": "integer",
+            "description": "Timestamp when the card was generated (epoch millis)"
+          },
+          "originalValue": {
+            "type": "number",
+            "description": "Original monetary value loaded on the card"
+          },
+          "remainingValue": {
+            "type": "number",
+            "description": "Remaining monetary value on the card"
+          },
+          "soldValue": {
+            "type": "number",
+            "description": "Total value that has been sold/loaded"
+          },
+          "redeemedValue": {
+            "type": "number",
+            "description": "Total value that has been redeemed"
+          },
+          "expiryDate": {
+            "type": "integer",
+            "description": "Expiry timestamp (epoch millis)"
+          },
+          "customerId": {
+            "type": "integer",
+            "description": "ID of the customer who owns this card"
+          },
+          "customerUuid": {
+            "type": "string",
+            "description": "UUID of the customer who owns this card"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current card status (e.g., EMPTY, ACTIVE)"
+          }
+        }
+      },
+      "CreditChange": {
+        "type": "object",
+        "description": "A record of a credit balance change for a customer",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique credit change identifier"
+          },
+          "changeQuantity": {
+            "type": "number",
+            "description": "Amount of the credit change (positive for additions, negative for deductions)"
+          },
+          "creationUserId": {
+            "type": "integer",
+            "description": "ID of the user who created this change"
+          },
+          "creationTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the credit change was created"
+          },
+          "receiptId": {
+            "type": "integer",
+            "description": "Associated receipt ID, if applicable"
+          }
+        }
+      },
+      "Floor": {
+        "type": "object",
+        "description": "A restaurant floor plan containing tables",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique floor identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Floor name"
+          },
+          "capacity": {
+            "type": "integer",
+            "description": "Maximum seating capacity for the floor"
+          },
+          "tables": {
+            "type": "array",
+            "description": "Tables on this floor",
+            "items": {
+              "$ref": "#/components/schemas/Table"
+            }
+          }
+        }
+      },
+      "Table": {
+        "type": "object",
+        "description": "A restaurant table",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique table identifier"
+          },
+          "floorId": {
+            "type": "integer",
+            "description": "ID of the floor this table belongs to"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name of the table"
+          },
+          "seats": {
+            "type": "integer",
+            "description": "Number of seats at the table"
+          },
+          "type": {
+            "type": "string",
+            "description": "Table type (e.g., restaurant, bar, takeaway, delivery, tab, takeaway_simple)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current table status"
+          }
+        }
+      },
+      "ProductSales": {
+        "type": "object",
+        "description": "Aggregated sales data for a single product",
+        "properties": {
+          "productName": {
+            "type": "string",
+            "description": "Name of the product"
+          },
+          "vatRate": {
+            "type": "number",
+            "description": "VAT rate percentage applied"
+          },
+          "vat": {
+            "type": "number",
+            "description": "Total VAT amount collected"
+          },
+          "pid": {
+            "type": "string",
+            "description": "Product SKU/PLU identifier"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Quantity sold"
+          },
+          "price": {
+            "type": "number",
+            "description": "Unit price"
+          },
+          "total": {
+            "type": "number",
+            "description": "Total revenue"
+          },
+          "costVatExcl": {
+            "type": "number",
+            "description": "Cost of goods sold excluding VAT"
+          },
+          "profit": {
+            "type": "number",
+            "description": "Profit (total minus cost)"
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "description": "A menu item or product in the inventory",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique product identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Product display name"
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "Whether the product is visible on the POS"
+          },
+          "imageLocation": {
+            "type": "string",
+            "description": "URL of the product image"
+          },
+          "kitchenImageLocation": {
+            "type": "string",
+            "description": "URL of the kitchen display image"
+          },
+          "cfdImageLocation": {
+            "type": "string",
+            "description": "URL of the customer-facing display image"
+          },
+          "price": {
+            "type": "number",
+            "description": "Dine-in price including VAT"
+          },
+          "priceWithoutVat": {
+            "type": "number",
+            "description": "Dine-in price excluding VAT"
+          },
+          "takeawayPrice": {
+            "type": "number",
+            "description": "Takeaway price including VAT"
+          },
+          "takeawayPriceWithoutVat": {
+            "type": "number",
+            "description": "Takeaway price excluding VAT"
+          },
+          "deliveryPrice": {
+            "type": "number",
+            "description": "Delivery price including VAT"
+          },
+          "deliveryPriceWithoutVat": {
+            "type": "number",
+            "description": "Delivery price excluding VAT"
+          },
+          "productType": {
+            "type": "string",
+            "description": "Product type (e.g., empty string for regular, CHOICE, REDUCTIONALLPERCENTAGE, REDUCTIONALL)"
+          },
+          "sku": {
+            "type": "string",
+            "description": "Stock keeping unit / PLU code"
+          },
+          "taxClass": {
+            "type": "string",
+            "description": "Tax class for dine-in orders"
+          },
+          "deliveryTaxClass": {
+            "type": "string",
+            "description": "Tax class for delivery orders"
+          },
+          "takeawayTaxClass": {
+            "type": "string",
+            "description": "Tax class for takeaway orders"
+          },
+          "stockAmount": {
+            "type": "number",
+            "description": "Current stock quantity"
+          },
+          "groupIds": {
+            "type": "array",
+            "description": "IDs of the product groups this product belongs to",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "additions": {
+            "type": "array",
+            "description": "Modifiers/additions available for this product",
+            "items": {
+              "$ref": "#/components/schemas/Addition"
+            }
+          },
+          "info": {
+            "type": "string",
+            "description": "Additional product information or description"
+          }
+        }
+      },
+      "SubProduct": {
+        "type": "object",
+        "description": "A child product linked to a parent product",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique subproduct identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Subproduct name"
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "Whether the subproduct is visible"
+          },
+          "productType": {
+            "type": "string",
+            "description": "Product type classification"
+          }
+        }
+      },
+      "Addition": {
+        "type": "object",
+        "description": "A modifier/addition group that can be applied to products",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique addition identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Addition group name"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Display name shown to customers (may differ from name)"
+          },
+          "values": {
+            "type": "array",
+            "description": "Available values/options within this addition group",
+            "items": {
+              "$ref": "#/components/schemas/AdditionValue"
+            }
+          },
+          "multiselect": {
+            "type": "boolean",
+            "description": "Whether multiple values can be selected simultaneously"
+          },
+          "minSelectedAmount": {
+            "type": "integer",
+            "description": "Minimum number of values that must be selected"
+          },
+          "maxSelectedAmount": {
+            "type": "integer",
+            "description": "Maximum number of values that can be selected (-1 for unlimited)"
+          },
+          "productLinks": {
+            "type": "array",
+            "description": "Product IDs this addition is linked to",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "AdditionValue": {
+        "type": "object",
+        "description": "A single option within an addition group",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique value identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Value display name"
+          },
+          "price": {
+            "type": "number",
+            "description": "Additional price including VAT"
+          },
+          "priceWithoutVAT": {
+            "type": "number",
+            "description": "Additional price excluding VAT"
+          },
+          "info": {
+            "type": "string",
+            "description": "Additional information about this value"
+          },
+          "plu": {
+            "type": "string",
+            "description": "PLU code for this value"
+          },
+          "default": {
+            "type": "boolean",
+            "description": "Whether this value is selected by default"
+          }
+        }
+      },
+      "TimedEvent": {
+        "type": "object",
+        "description": "A scheduled promotion or price adjustment (e.g., happy hour)",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique timed event identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Event name"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of adjustment (e.g., Percentage Adjustment)"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Adjustment amount (negative for discounts)"
+          },
+          "daysOfTheWeek": {
+            "type": "array",
+            "description": "Boolean array for each day of the week (Mon-Sun) indicating if the event is active",
+            "items": {
+              "type": "boolean"
+            }
+          },
+          "activeTimeFrom": {
+            "type": "string",
+            "description": "Start time of the active period (HH:mm)"
+          },
+          "activeTimeTo": {
+            "type": "string",
+            "description": "End time of the active period (HH:mm)"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date when the event becomes effective"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date when the event expires"
+          },
+          "linkedProducts": {
+            "type": "array",
+            "description": "Products affected by this event",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "Product ID"
+                },
+                "sku": {
+                  "type": "string",
+                  "description": "Product SKU/PLU"
+                }
+              }
+            }
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Priority when multiple events overlap (higher wins)"
+          }
+        }
+      },
+      "ModificationTimes": {
+        "type": "object",
+        "description": "Last modification timestamps for various inventory entities, useful for cache invalidation",
+        "properties": {
+          "products": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last time any product was modified"
+          },
+          "productGroups": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last time any product group was modified"
+          },
+          "modifiers": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last time any modifier/addition was modified"
+          },
+          "timedEvents": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last time any timed event was modified"
+          }
+        }
+      },
+      "ProductGroup": {
+        "type": "object",
+        "description": "A category grouping for products",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique product group identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Product group name"
+          },
+          "sequence": {
+            "type": "integer",
+            "description": "Display order/sequence number"
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "Whether the group is visible on the POS"
+          },
+          "categoryId": {
+            "type": "integer",
+            "description": "Parent category identifier"
+          },
+          "shortcutCategory": {
+            "type": "boolean",
+            "description": "Whether this group appears as a shortcut category"
+          },
+          "products": {
+            "type": "array",
+            "description": "Products in this group (may be empty in list responses)",
+            "items": {}
+          }
+        }
+      },
+      "PaymentTypeCreate": {
+        "type": "object",
+        "description": "Request body for creating a new payment type",
+        "required": ["name", "typeId"],
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Description of the payment type"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name for the payment type"
+          },
+          "typeId": {
+            "type": "integer",
+            "description": "Numeric type identifier for the payment method category"
+          }
+        }
+      },
+      "Receipt": {
+        "type": "object",
+        "description": "A financial receipt/transaction record",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique receipt identifier"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Receipt date and time"
+          },
+          "status": {
+            "type": "string",
+            "description": "Receipt status"
+          },
+          "customerId": {
+            "type": "integer",
+            "description": "Associated customer ID"
+          },
+          "customerUuid": {
+            "type": "string",
+            "description": "Associated customer UUID"
+          },
+          "tableId": {
+            "type": "string",
+            "description": "Table where the order was placed"
+          },
+          "floorId": {
+            "type": "integer",
+            "description": "Floor where the order was placed"
+          },
+          "items": {
+            "type": "array",
+            "description": "Line items on the receipt",
+            "items": {
+              "$ref": "#/components/schemas/ReceiptItem"
+            }
+          },
+          "payments": {
+            "type": "array",
+            "description": "Payments made against this receipt",
+            "items": {
+              "$ref": "#/components/schemas/ReceiptPayment"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total receipt amount"
+          },
+          "modificationTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last modification timestamp"
+          }
+        }
+      },
+      "ReceiptItem": {
+        "type": "object",
+        "description": "A line item on a receipt",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "description": "Product identifier"
+          },
+          "productName": {
+            "type": "string",
+            "description": "Product display name"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Quantity of items"
+          },
+          "price": {
+            "type": "number",
+            "description": "Unit price"
+          },
+          "total": {
+            "type": "number",
+            "description": "Line total"
+          },
+          "vat": {
+            "type": "number",
+            "description": "VAT amount"
+          },
+          "vatRate": {
+            "type": "number",
+            "description": "VAT rate applied"
+          }
+        }
+      },
+      "ReceiptPayment": {
+        "type": "object",
+        "description": "A payment entry on a receipt",
+        "properties": {
+          "paymentTypeId": {
+            "type": "integer",
+            "description": "Payment type identifier"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Payment amount"
+          },
+          "tip": {
+            "type": "number",
+            "description": "Tip amount"
+          }
+        }
+      },
+      "ClockTime": {
+        "type": "object",
+        "description": "A clock-in/clock-out record for an employee",
+        "properties": {
+          "companyId": {
+            "type": "integer",
+            "description": "Company identifier"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "Employee user identifier"
+          },
+          "clockInTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Clock-in timestamp"
+          },
+          "clockOutTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Clock-out timestamp"
+          },
+          "clockInLastModifiedDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last modification time of the clock-in record"
+          },
+          "clockOutLastModifiedDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last modification time of the clock-out record"
+          },
+          "clockInLastModifiedUserId": {
+            "type": "integer",
+            "description": "User who last modified the clock-in record"
+          },
+          "clockOutLastModifiedUserId": {
+            "type": "integer",
+            "description": "User who last modified the clock-out record"
+          }
+        }
+      },
+      "Employee": {
+        "type": "object",
+        "description": "An employee record",
+        "properties": {
+          "companyId": {
+            "type": "integer",
+            "description": "Company identifier"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "Unique user/employee identifier"
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "Whether the employee is visible/active"
+          },
+          "socialSecurityNumber": {
+            "type": "string",
+            "description": "Social security number"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "First name"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Last name"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address"
+          },
+          "username": {
+            "type": "string",
+            "description": "Login username"
+          },
+          "telephone": {
+            "type": "string",
+            "description": "Phone number"
+          },
+          "gsm": {
+            "type": "string",
+            "description": "Mobile phone number"
+          },
+          "street": {
+            "type": "string",
+            "description": "Street address"
+          },
+          "streetNumber": {
+            "type": "string",
+            "description": "Street number"
+          },
+          "city": {
+            "type": "string",
+            "description": "City"
+          },
+          "zip": {
+            "type": "string",
+            "description": "Postal/ZIP code"
+          }
+        }
+      },
+      "OnlineOrder": {
+        "type": "object",
+        "description": "An online order with items, payments, and status",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique order identifier"
+          },
+          "deliveryDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Scheduled delivery or pickup date and time"
+          },
+          "creationDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the order was created"
+          },
+          "type": {
+            "type": "string",
+            "description": "Order type (e.g., delivery, takeaway)"
+          },
+          "receiptId": {
+            "type": "integer",
+            "description": "Associated receipt ID (0 if not yet processed)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Order status (ACCEPTED, DENIED, AWAITING_PROCESSING, PROCESSED)"
+          },
+          "orderItems": {
+            "type": "array",
+            "description": "Items in the order",
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          },
+          "orderPayments": {
+            "type": "array",
+            "description": "Payments for the order",
+            "items": {
+              "$ref": "#/components/schemas/OrderPayment"
+            }
+          },
+          "orderTaxInfo": {
+            "type": "array",
+            "description": "Tax breakdown information",
+            "items": {}
+          },
+          "note": {
+            "type": "string",
+            "description": "Order notes and special instructions"
+          },
+          "numberOfCustomers": {
+            "type": "integer",
+            "description": "Number of customers for the order"
+          },
+          "tableId": {
+            "type": "integer",
+            "description": "Table assigned to the order (0 if none)"
+          },
+          "customerId": {
+            "type": "integer",
+            "description": "Customer who placed the order"
+          }
+        }
+      },
+      "OnlineOrderCreate": {
+        "type": "object",
+        "description": "Request body for creating a new online order",
+        "required": ["type", "deliveryDate", "customerId", "orderItems", "status", "orderPayments"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Order type (e.g., delivery, takeaway)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Order description"
+          },
+          "deliveryDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Scheduled delivery or pickup date and time"
+          },
+          "note": {
+            "type": "string",
+            "description": "Order notes and special instructions"
+          },
+          "customerId": {
+            "type": "integer",
+            "description": "Customer placing the order"
+          },
+          "companyId": {
+            "type": "integer",
+            "description": "Company ID (required for establishment orders)"
+          },
+          "orderItems": {
+            "type": "array",
+            "description": "Items in the order",
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          },
+          "status": {
+            "type": "string",
+            "description": "Initial order status",
+            "enum": ["ACCEPTED", "AWAITING_PROCESSING"]
+          },
+          "orderPayments": {
+            "type": "array",
+            "description": "Payments for the order",
+            "items": {
+              "$ref": "#/components/schemas/OrderPayment"
+            }
+          }
+        }
+      },
+      "OnlineOrderUpdate": {
+        "type": "object",
+        "description": "Request body for updating an online order",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "New order status"
+          },
+          "note": {
+            "type": "string",
+            "description": "Updated order notes"
+          },
+          "deliveryDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Updated delivery date"
+          }
+        }
+      },
+      "OrderItem": {
+        "type": "object",
+        "description": "A single item within an online order",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Order item identifier (in responses)"
+          },
+          "productId": {
+            "type": "integer",
+            "description": "Product ID being ordered"
+          },
+          "productPlu": {
+            "type": "string",
+            "description": "Product PLU/SKU code (used in establishment orders)"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Quantity ordered"
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Price per unit including VAT"
+          },
+          "totalPrice": {
+            "type": "number",
+            "description": "Total price including VAT"
+          },
+          "unitPriceWithoutVat": {
+            "type": "number",
+            "description": "Price per unit excluding VAT"
+          },
+          "totalPriceWithoutVat": {
+            "type": "number",
+            "description": "Total price excluding VAT"
+          },
+          "modifiers": {
+            "type": "array",
+            "description": "Modifiers applied to this item",
+            "items": {
+              "$ref": "#/components/schemas/OrderModifier"
+            }
+          },
+          "subitems": {
+            "type": "array",
+            "description": "Sub-items (for choice/combo products)",
+            "items": {}
+          }
+        }
+      },
+      "OrderModifier": {
+        "type": "object",
+        "description": "A modifier applied to an order item",
+        "properties": {
+          "modifierValueId": {
+            "type": "integer",
+            "description": "ID of the selected modifier value"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable modifier description"
+          },
+          "modifierId": {
+            "type": "integer",
+            "description": "ID of the modifier group"
+          },
+          "price": {
+            "type": "number",
+            "description": "Additional price including VAT"
+          },
+          "priceWithoutVat": {
+            "type": "number",
+            "description": "Additional price excluding VAT"
+          },
+          "plu": {
+            "type": "string",
+            "description": "PLU code for the modifier (used in establishment orders)"
+          }
+        }
+      },
+      "OrderPayment": {
+        "type": "object",
+        "description": "A payment entry for an online order",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Payment entry identifier (in responses)"
+          },
+          "paymentTypeId": {
+            "type": "integer",
+            "description": "Payment type identifier"
+          },
+          "paymentTypeTypeId": {
+            "type": "integer",
+            "description": "Payment type category identifier"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Payment amount"
+          },
+          "tip": {
+            "type": "number",
+            "description": "Tip amount"
+          }
+        }
+      },
+      "OnlinePaymentType": {
+        "type": "object",
+        "description": "A payment type available for online orders",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Payment type identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Payment type name"
+          },
+          "typeId": {
+            "type": "integer",
+            "description": "Payment type category identifier"
+          }
+        }
+      },
+      "TaxClass": {
+        "type": "object",
+        "description": "A tax class configuration for online ordering",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Tax class identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Tax class name"
+          },
+          "rate": {
+            "type": "number",
+            "description": "Tax rate percentage"
+          }
+        }
+      },
+      "Reservation": {
+        "type": "object",
+        "description": "A table reservation record",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique reservation identifier"
+          },
+          "companyId": {
+            "type": "integer",
+            "description": "Company identifier"
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Reservation start time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Reservation end time"
+          },
+          "status": {
+            "type": "string",
+            "description": "Reservation status (e.g., CONFIRMED, CANCELLED)"
+          },
+          "seats": {
+            "type": "integer",
+            "description": "Number of seats reserved"
+          },
+          "customerId": {
+            "type": "integer",
+            "description": "Customer who made the reservation (-1 if walk-in)"
+          },
+          "floorId": {
+            "type": "integer",
+            "description": "Floor ID for the reserved table"
+          },
+          "tableId": {
+            "type": "string",
+            "description": "Table ID for the reservation"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Reservation notes"
+          },
+          "reservationName": {
+            "type": "string",
+            "description": "Name the reservation is under"
+          },
+          "telephone": {
+            "type": "string",
+            "description": "Contact telephone number"
+          },
+          "modificationTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last modification timestamp"
+          }
+        }
+      },
+      "ReservationCreate": {
+        "type": "object",
+        "description": "Request body for creating a reservation",
+        "required": ["companyId", "startTime", "endTime", "seats"],
+        "properties": {
+          "companyId": {
+            "type": "integer",
+            "description": "Company identifier"
+          },
+          "customerId": {
+            "type": "integer",
+            "description": "Customer who is making the reservation"
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Reservation start time (ISO-8601)"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Reservation end time (ISO-8601)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Initial reservation status"
+          },
+          "seats": {
+            "type": "integer",
+            "description": "Number of seats to reserve"
+          },
+          "floorId": {
+            "type": "integer",
+            "description": "Floor ID for the reservation"
+          },
+          "tableId": {
+            "type": "integer",
+            "description": "Table ID for the reservation"
+          },
+          "reservationName": {
+            "type": "string",
+            "description": "Name the reservation is under"
+          },
+          "telephone": {
+            "type": "string",
+            "description": "Contact telephone number"
+          }
+        }
+      },
+      "ReservationConfiguration": {
+        "type": "object",
+        "description": "Reservation system configuration settings",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the reservation system is enabled"
+          },
+          "defaultDuration": {
+            "type": "integer",
+            "description": "Default reservation duration in minutes"
+          },
+          "maxPartySize": {
+            "type": "integer",
+            "description": "Maximum allowed party size"
+          },
+          "minLeadTime": {
+            "type": "integer",
+            "description": "Minimum lead time in minutes before a reservation can be made"
+          }
+        }
+      },
+      "JsonPatchRequest": {
+        "type": "object",
+        "description": "JSON Patch request body containing an array of patch operations",
+        "required": ["operations"],
+        "properties": {
+          "operations": {
+            "type": "array",
+            "description": "Array of JSON Patch operations",
+            "items": {
+              "$ref": "#/components/schemas/JsonPatchOperation"
+            }
+          }
+        }
+      },
+      "JsonPatchOperation": {
+        "type": "object",
+        "description": "A single JSON Patch operation",
+        "required": ["op", "path"],
+        "properties": {
+          "op": {
+            "type": "string",
+            "description": "Operation type",
+            "enum": ["add", "remove", "replace", "move", "copy", "test"]
+          },
+          "path": {
+            "type": "string",
+            "description": "JSON Pointer to the target field"
+          },
+          "value": {
+            "description": "New value for the field (required for add, replace, test)"
+          }
+        }
+      }
+    }
+  }
+}
