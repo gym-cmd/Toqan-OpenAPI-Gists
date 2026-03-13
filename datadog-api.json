@@ -16,11 +16,11 @@
   },
   "servers": [
     {
-      "url": "https://api.datadoghq.com",
-      "description": "Datadog US1 (default)"
+      "url": "https://api.datadoghq.eu",
+      "description": "Datadog US1 (Default)"
     },
     {
-      "url": "https://api.datadoghq.eu",
+      "url": "https://api.datadoghq.com",
       "description": "Datadog EU1"
     },
     {
