@@ -15,12 +15,18 @@
   },
   "servers": [
     {
-      "url": "https://app-de.onetrust.com",
+      "url": "https://{hostname}",
       "description": "OneTrust API Server",
       "variables": {
         "hostname": {
           "default": "app.onetrust.com",
-          "description": "The OneTrust hostname. Common values: app.onetrust.com (US), app-eu.onetrust.com (EU), app-de.onetrust.com (Germany), app-uk.onetrust.com (UK), app-apac.onetrust.com (APAC), trial.onetrust.com (Trial), uat.onetrust.com (UAT)."
+          "enum": [
+            "app.onetrust.com",
+            "app-de.onetrust.com",
+            "app-uk.onetrust.com",
+            "app-eu.onetrust.com"
+          ],
+          "description": "Select your specific OneTrust environment hostname"
         }
       }
     }
